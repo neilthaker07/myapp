@@ -8,6 +8,7 @@ import com.demo.myapp.decorator.StatusFilter;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookRequest;
 import com.demo.myapp.model.BookStatus;
+import com.demo.myapp.model.NullBook;
 import com.demo.myapp.observer.AuditLogObserver;
 import com.demo.myapp.observer.AvailabilityObserver;
 import com.demo.myapp.observer.BookEventPublisher;
@@ -108,7 +109,7 @@ public class LibraryFacade {
 
         // Capture old status before transition — required for observer notification
         Book book = bookService.getBookById(id);
-        if (book == null) return null;
+        if (book.isEmpty()) return NullBook.getInstance(); // Null Object — no null check needed downstream
         BookStatus oldStatus = book.getStatus();
 
         Book updated = bookService.changeBookState(id, action);

@@ -3,6 +3,7 @@ package com.demo.myapp.service;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookRequest;
 import com.demo.myapp.model.BookStatus;
+import com.demo.myapp.model.NullBook;
 import com.demo.myapp.strategy.BookSortStrategy;
 import com.demo.myapp.util.AppLogger;
 import org.springframework.context.annotation.Primary;
@@ -36,7 +37,7 @@ public class CachingBookServiceProxy implements IBookService {
         }
         logger.info("PROXY [CACHE MISS] getBookById id=" + id + " — delegating to BookService");
         Book book = bookService.getBookById(id);
-        if (book != null) {
+        if (!book.isEmpty()) { // Null Object — never cache NullBook
             cache.put(id, book);
         }
         return book;
@@ -46,7 +47,7 @@ public class CachingBookServiceProxy implements IBookService {
     @Override
     public Book updateBook(Long id, BookRequest request) {
         Book updated = bookService.updateBook(id, request);
-        if (updated != null) {
+        if (!updated.isEmpty()) {
             cache.remove(id);
             logger.info("PROXY [INVALIDATED] cache evicted for book id=" + id + " after update");
         }
@@ -66,7 +67,7 @@ public class CachingBookServiceProxy implements IBookService {
     @Override
     public Book changeBookState(Long id, String action) {
         Book updated = bookService.changeBookState(id, action);
-        if (updated != null) {
+        if (!updated.isEmpty()) {
             cache.remove(id); // state changed — cached copy is stale
             logger.info("PROXY [INVALIDATED] cache evicted for book id=" + id + " after state change");
         }

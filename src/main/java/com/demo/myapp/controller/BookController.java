@@ -5,8 +5,13 @@ import com.demo.myapp.adapter.ExternalBookView;
 import com.demo.myapp.facade.LibraryFacade;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookRequest;
+import com.demo.myapp.template.BookReportTemplate;
+import com.demo.myapp.template.CsvReportGenerator;
+import com.demo.myapp.template.DetailedReportGenerator;
+import com.demo.myapp.template.SummaryReportGenerator;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +47,7 @@ public class BookController {
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         Book book = libraryFacade.findBook(id);
-        return book != null
+        return !book.isEmpty()
                 ? ResponseEntity.ok(book)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -51,7 +56,7 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @Valid @RequestBody BookRequest request) {
         Book updated = libraryFacade.modifyBook(id, request);
-        return updated != null
+        return !updated.isEmpty()
                 ? ResponseEntity.ok(updated)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -78,7 +83,7 @@ public class BookController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Book> changeBookState(@PathVariable Long id, @RequestParam String action) {
         Book updated = libraryFacade.transitionState(id, action);
-        return updated != null
+        return !updated.isEmpty()
                 ? ResponseEntity.ok(updated)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -92,11 +97,29 @@ public class BookController {
         return ResponseEntity.ok(libraryFacade.getFilteredBooks(genre, language, status));
     }
 
+    // REPORT (GET) - http://localhost:8080/api/books/report?format=summary|detailed|csv
+    // Template Method Pattern — same algorithm skeleton, different formatting per subclass
+    @GetMapping("/report")
+    public ResponseEntity<String> generateReport(
+            @RequestParam(defaultValue = "summary") String format) {
+
+        BookReportTemplate generator = switch (format.toLowerCase()) {
+            case "detailed" -> new DetailedReportGenerator();
+            case "csv"      -> new CsvReportGenerator();
+            default         -> new SummaryReportGenerator();
+        };
+
+        String report = generator.generateReport(libraryFacade.getBooks("id"));
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(report);
+    }
+
     // EXTERNAL VIEW (GET) - http://localhost:8080/api/books/{id}/external
     @GetMapping("/{id}/external")
     public ResponseEntity<ExternalBookView> getExternalView(@PathVariable Long id) {
         Book book = libraryFacade.findBook(id);
-        return book != null
+        return !book.isEmpty()
                 ? ResponseEntity.ok(new BookToExternalAdapter(book))
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

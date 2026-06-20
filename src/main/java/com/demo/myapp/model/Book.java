@@ -22,6 +22,9 @@ public class Book {
         this.author = author;
     }
 
+    // Returns true only for NullBook — callers use this instead of null checks
+    public boolean isEmpty() { return false; }
+
     // Called by concrete state classes to switch state
     public void setState(BookState state) {
         this.state = state;

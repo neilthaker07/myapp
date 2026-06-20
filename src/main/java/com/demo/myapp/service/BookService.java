@@ -6,6 +6,7 @@ import com.demo.myapp.chain.MaxLibrarySizeHandler;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookRequest;
 import com.demo.myapp.model.BookStatus;
+import com.demo.myapp.model.NullBook;
 import com.demo.myapp.repository.BookRepository;
 import com.demo.myapp.strategy.BookSortStrategy;
 import com.demo.myapp.util.AppLogger;
@@ -54,7 +55,7 @@ public class BookService implements IBookService {
     public Book getBookById(Long id) {
         return bookRepository.findById(id)
                 .map(book -> { logger.info("Fetching book id=" + id); return book; })
-                .orElseGet(() -> { logger.warn("Book not found, id=" + id); return null; });
+                .orElseGet(() -> { logger.warn("Book not found, id=" + id); return NullBook.getInstance(); });
     }
 
     @Override
@@ -81,7 +82,7 @@ public class BookService implements IBookService {
             return bookRepository.save(updated);
         }).orElseGet(() -> {
             logger.warn("Update failed — book not found, id=" + id);
-            return null;
+            return NullBook.getInstance();
         });
     }
 
@@ -116,7 +117,7 @@ public class BookService implements IBookService {
             return bookRepository.save(book); // persist updated state
         }).orElseGet(() -> {
             logger.warn("State change failed — book not found, id=" + id);
-            return null;
+            return NullBook.getInstance();
         });
     }
 }
