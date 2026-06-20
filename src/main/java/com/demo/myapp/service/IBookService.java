@@ -18,4 +18,5 @@ public interface IBookService {
     boolean deleteBook(Long id);
     BookStatus getBookStatus(Long id);
     Book changeBookState(Long id, String action);
+    Book saveBook(Book book); // persist an already-mutated domain object (used by Command pattern)
 }

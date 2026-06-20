@@ -1,19 +1,26 @@
 package com.demo.myapp.facade;
 
+import com.demo.myapp.command.BookCommandHistory;
+import com.demo.myapp.command.LendBookCommand;
+import com.demo.myapp.command.MakeAvailableForLendingCommand;
+import com.demo.myapp.command.MakeAvailableForReadingCommand;
+import com.demo.myapp.command.RemoveFromLibraryCommand;
+import com.demo.myapp.command.ReturnBookCommand;
+import com.demo.myapp.command.Command;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookGenre;
 import com.demo.myapp.model.BookRequest;
 import com.demo.myapp.model.BookStatus;
 import com.demo.myapp.model.NullBook;
-import com.demo.myapp.specification.GenreSpecification;
-import com.demo.myapp.specification.LanguageSpecification;
-import com.demo.myapp.specification.Specification;
-import com.demo.myapp.specification.StatusSpecification;
 import com.demo.myapp.observer.AuditLogObserver;
 import com.demo.myapp.observer.AvailabilityObserver;
 import com.demo.myapp.observer.BookEventPublisher;
 import com.demo.myapp.observer.LendingNotificationObserver;
 import com.demo.myapp.service.IBookService;
+import com.demo.myapp.specification.GenreSpecification;
+import com.demo.myapp.specification.LanguageSpecification;
+import com.demo.myapp.specification.Specification;
+import com.demo.myapp.specification.StatusSpecification;
 import com.demo.myapp.strategy.BookSortStrategy;
 import com.demo.myapp.strategy.SortByAuthorStrategy;
 import com.demo.myapp.strategy.SortByIdStrategy;
@@ -27,16 +34,17 @@ import java.util.List;
 @Service
 public class LibraryFacade {
 
-    // Client doesn't know it's a proxy. Example - Spring AOP, lazy loading, auth
-    private final IBookService bookService; // holds proxy — LibraryFacade never knows
+    private final IBookService bookService;
     private final BookEventPublisher publisher;
+    private final BookCommandHistory commandHistory;
     private final AppLogger logger = AppLogger.getInstance();
 
-    public LibraryFacade(IBookService bookService, BookEventPublisher publisher) {
+    public LibraryFacade(IBookService bookService, BookEventPublisher publisher,
+                         BookCommandHistory commandHistory) {
         this.bookService = bookService;
         this.publisher = publisher;
+        this.commandHistory = commandHistory;
 
-        // Register all observers — the publisher doesn't know their concrete types
         publisher.register(new AuditLogObserver());
         publisher.register(new AvailabilityObserver());
         publisher.register(new LendingNotificationObserver());
@@ -113,20 +121,54 @@ public class LibraryFacade {
                 .toList();
     }
 
-    // IllegalStateException / IllegalArgumentException bubble up — controller maps them to HTTP status codes
+    // Command Pattern — wraps state transition in a Command, records for undo/audit
     public Book transitionState(Long id, String action) {
         logger.info("Facade: transitionState - id=" + id + ", action=" + action);
 
-        // Capture old status before transition — required for observer notification
         Book book = bookService.getBookById(id);
-        if (book.isEmpty()) return NullBook.getInstance(); // Null Object — no null check needed downstream
+        if (book.isEmpty()) return NullBook.getInstance();
         BookStatus oldStatus = book.getStatus();
 
-        Book updated = bookService.changeBookState(id, action);
+        // Build the right command — each knows how to execute AND undo itself
+        Command command = switch (action) {
+            case "lend"              -> new LendBookCommand(book.getTitle());
+            case "return"            -> new ReturnBookCommand(book.getTitle());
+            case "read-in-library"   -> new MakeAvailableForReadingCommand(book.getTitle(), oldStatus);
+            case "available-to-lend" -> new MakeAvailableForLendingCommand(book.getTitle(), oldStatus);
+            case "remove"            -> new RemoveFromLibraryCommand(book.getTitle(), oldStatus);
+            default -> throw new IllegalArgumentException("Unknown action: " + action
+                    + ". Valid: lend, return, read-in-library, available-to-lend, remove");
+        };
 
-        // Observer Pattern — notify all registered observers after the state changes
-        publisher.notify(updated, oldStatus, updated.getStatus());
+        command.execute(book);                    // mutate state in memory
+        Book saved = bookService.saveBook(book);  // persist
+        commandHistory.record(id, command);       // track for undo/audit
+        publisher.notify(saved, oldStatus, saved.getStatus()); // observers
 
-        return updated;
+        return saved;
+    }
+
+    // Undo the last state transition for a book
+    public Book undoLastAction(Long id) {
+        logger.info("Facade: undoLastAction - id=" + id);
+
+        Book book = bookService.getBookById(id);
+        if (book.isEmpty()) return NullBook.getInstance();
+        BookStatus oldStatus = book.getStatus();
+
+        boolean undone = commandHistory.undo(id, book);
+        if (!undone) {
+            logger.warn("Facade: nothing to undo for book id=" + id);
+            return book;
+        }
+
+        Book saved = bookService.saveBook(book);
+        publisher.notify(saved, oldStatus, saved.getStatus());
+        return saved;
+    }
+
+    // Audit log — all commands executed on a book, most recent first
+    public List<String> getCommandHistory(Long id) {
+        return commandHistory.getHistory(id);
     }
 }

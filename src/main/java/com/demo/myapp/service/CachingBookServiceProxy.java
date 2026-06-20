@@ -74,6 +74,16 @@ public class CachingBookServiceProxy implements IBookService {
         return updated;
     }
 
+    @Override
+    public Book saveBook(Book book) {
+        Book saved = bookService.saveBook(book);
+        if (book.getId() != null) {
+            cache.remove(book.getId());
+            logger.info("PROXY [INVALIDATED] cache evicted for book id=" + book.getId() + " after save");
+        }
+        return saved;
+    }
+
     // PASS-THROUGH — no caching needed for these operations
     @Override
     public List<Book> getAllBooks() { return bookService.getAllBooks(); }

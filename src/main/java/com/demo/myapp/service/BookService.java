@@ -101,6 +101,11 @@ public class BookService implements IBookService {
     }
 
     @Override
+    public Book saveBook(Book book) {
+        return bookRepository.save(book);
+    }
+
+    @Override
     public Book changeBookState(Long id, String action) {
         return bookRepository.findById(id).map(book -> {
             logger.info("State change: book id=" + id + ", action=" + action);

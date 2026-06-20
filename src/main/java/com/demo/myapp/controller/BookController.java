@@ -88,6 +88,25 @@ public class BookController {
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    // UNDO (POST) - http://localhost:8080/api/books/{id}/undo
+    // Command Pattern — reverses the last state transition on this book
+    @PostMapping("/{id}/undo")
+    public ResponseEntity<BookResponse> undoLastAction(@PathVariable Long id) {
+        Book book = libraryFacade.undoLastAction(id);
+        return !book.isEmpty()
+                ? ResponseEntity.ok(BookMapper.toResponse(book))
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    // HISTORY (GET) - http://localhost:8080/api/books/{id}/history
+    // Command Pattern — returns audit log of all commands executed on this book
+    @GetMapping("/{id}/history")
+    public ResponseEntity<Map<String, Object>> getCommandHistory(@PathVariable Long id) {
+        return ResponseEntity.ok(Map.of(
+                "bookId", id,
+                "history", libraryFacade.getCommandHistory(id)));
+    }
+
     // FILTER (GET) - http://localhost:8080/api/books/filter?genre=PROGRAMMING&language=English&status=AVAILABLE_TO_LEND
     @GetMapping("/filter")
     public ResponseEntity<List<BookResponse>> filterBooks(
