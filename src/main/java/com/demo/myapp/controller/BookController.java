@@ -2,6 +2,8 @@ package com.demo.myapp.controller;
 
 import com.demo.myapp.adapter.BookToExternalAdapter;
 import com.demo.myapp.adapter.ExternalBookView;
+import com.demo.myapp.dto.BookMapper;
+import com.demo.myapp.dto.BookResponse;
 import com.demo.myapp.facade.LibraryFacade;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookRequest;
@@ -29,35 +31,34 @@ public class BookController {
     }
 
     // CREATE (POST) - http://localhost:8080/api/books
-    // @Valid triggers Bean Validation on BookRequest before the method body runs
-    // GlobalExceptionHandler maps MethodArgumentNotValidException → 400, IllegalArgumentException → 400
     @PostMapping
-    public ResponseEntity<Book> createBook(@Valid @RequestBody BookRequest request) {
-        return new ResponseEntity<>(libraryFacade.addBook(request), HttpStatus.CREATED);
+    public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookRequest request) {
+        Book book = libraryFacade.addBook(request);
+        return new ResponseEntity<>(BookMapper.toResponse(book), HttpStatus.CREATED);
     }
 
     // READ ALL (GET) - http://localhost:8080/api/books?sort=title|author|id
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks(
+    public ResponseEntity<List<BookResponse>> getAllBooks(
             @RequestParam(required = false, defaultValue = "id") String sort) {
-        return ResponseEntity.ok(libraryFacade.getBooks(sort));
+        return ResponseEntity.ok(BookMapper.toResponseList(libraryFacade.getBooks(sort)));
     }
 
     // READ ONE (GET) - http://localhost:8080/api/books/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+    public ResponseEntity<BookResponse> getBookById(@PathVariable Long id) {
         Book book = libraryFacade.findBook(id);
         return !book.isEmpty()
-                ? ResponseEntity.ok(book)
+                ? ResponseEntity.ok(BookMapper.toResponse(book))
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     // UPDATE (PUT) - http://localhost:8080/api/books/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @Valid @RequestBody BookRequest request) {
+    public ResponseEntity<BookResponse> updateBook(@PathVariable Long id, @Valid @RequestBody BookRequest request) {
         Book updated = libraryFacade.modifyBook(id, request);
         return !updated.isEmpty()
-                ? ResponseEntity.ok(updated)
+                ? ResponseEntity.ok(BookMapper.toResponse(updated))
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -79,40 +80,35 @@ public class BookController {
     }
 
     // CHANGE STATE (PATCH) - http://localhost:8080/api/books/{id}/status?action=lend
-    // GlobalExceptionHandler maps IllegalStateException → 409, IllegalArgumentException → 400
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Book> changeBookState(@PathVariable Long id, @RequestParam String action) {
+    public ResponseEntity<BookResponse> changeBookState(@PathVariable Long id, @RequestParam String action) {
         Book updated = libraryFacade.transitionState(id, action);
         return !updated.isEmpty()
-                ? ResponseEntity.ok(updated)
+                ? ResponseEntity.ok(BookMapper.toResponse(updated))
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    // FILTER (GET) - http://localhost:8080/api/books/filter?genre=Java&language=English&status=AVAILABLE_TO_LEND
+    // FILTER (GET) - http://localhost:8080/api/books/filter?genre=PROGRAMMING&language=English&status=AVAILABLE_TO_LEND
     @GetMapping("/filter")
-    public ResponseEntity<List<Book>> filterBooks(
+    public ResponseEntity<List<BookResponse>> filterBooks(
             @RequestParam(required = false) String genre,
             @RequestParam(required = false) String language,
             @RequestParam(required = false) String status) {
-        return ResponseEntity.ok(libraryFacade.getFilteredBooks(genre, language, status));
+        return ResponseEntity.ok(BookMapper.toResponseList(libraryFacade.getFilteredBooks(genre, language, status)));
     }
 
     // REPORT (GET) - http://localhost:8080/api/books/report?format=summary|detailed|csv
-    // Template Method Pattern — same algorithm skeleton, different formatting per subclass
     @GetMapping("/report")
     public ResponseEntity<String> generateReport(
             @RequestParam(defaultValue = "summary") String format) {
-
         BookReportTemplate generator = switch (format.toLowerCase()) {
             case "detailed" -> new DetailedReportGenerator();
             case "csv"      -> new CsvReportGenerator();
             default         -> new SummaryReportGenerator();
         };
-
-        String report = generator.generateReport(libraryFacade.getBooks("id"));
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_PLAIN)
-                .body(report);
+                .body(generator.generateReport(libraryFacade.getBooks("id")));
     }
 
     // EXTERNAL VIEW (GET) - http://localhost:8080/api/books/{id}/external

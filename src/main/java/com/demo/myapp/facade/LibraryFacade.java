@@ -1,14 +1,14 @@
 package com.demo.myapp.facade;
 
-import com.demo.myapp.decorator.BookFilter;
-import com.demo.myapp.decorator.GenreFilter;
-import com.demo.myapp.decorator.LanguageFilter;
-import com.demo.myapp.decorator.NoOpFilter;
-import com.demo.myapp.decorator.StatusFilter;
 import com.demo.myapp.model.Book;
+import com.demo.myapp.model.BookGenre;
 import com.demo.myapp.model.BookRequest;
 import com.demo.myapp.model.BookStatus;
 import com.demo.myapp.model.NullBook;
+import com.demo.myapp.specification.GenreSpecification;
+import com.demo.myapp.specification.LanguageSpecification;
+import com.demo.myapp.specification.Specification;
+import com.demo.myapp.specification.StatusSpecification;
 import com.demo.myapp.observer.AuditLogObserver;
 import com.demo.myapp.observer.AvailabilityObserver;
 import com.demo.myapp.observer.BookEventPublisher;
@@ -81,26 +81,36 @@ public class LibraryFacade {
         return bookService.getBookStatus(id);
     }
 
-    // Decorator Pattern — builds filter chain dynamically from whichever params are provided
+    // Specification Pattern — composes predicates with .and(); supports OR/NOT unlike Decorator chain
     public List<Book> getFilteredBooks(String genre, String language, String status) {
         List<Book> allBooks = bookService.getAllBooks();
 
-        BookFilter filter = new NoOpFilter(); // base: returns everything
+        Specification<Book> spec = book -> true; // start: match everything
+
         if (genre != null && !genre.isBlank()) {
-            filter = new GenreFilter(genre, filter);
+            try {
+                spec = spec.and(new GenreSpecification(BookGenre.valueOf(genre.toUpperCase())));
+            } catch (IllegalArgumentException ignored) {
+                logger.warn("Facade: unknown genre filter value=" + genre + ", skipping");
+            }
         }
         if (language != null && !language.isBlank()) {
-            filter = new LanguageFilter(language, filter);
+            spec = spec.and(new LanguageSpecification(language));
         }
         if (status != null && !status.isBlank()) {
             try {
-                filter = new StatusFilter(BookStatus.valueOf(status.toUpperCase()), filter);
+                spec = spec.and(new StatusSpecification(BookStatus.valueOf(status.toUpperCase())));
             } catch (IllegalArgumentException ignored) {
                 logger.warn("Facade: unknown status filter value=" + status + ", skipping");
             }
         }
+
         logger.info("Facade: getFilteredBooks - genre=" + genre + ", language=" + language + ", status=" + status);
-        return filter.apply(allBooks);
+
+        final Specification<Book> finalSpec = spec;
+        return allBooks.stream()
+                .filter(finalSpec::isSatisfiedBy)
+                .toList();
     }
 
     // IllegalStateException / IllegalArgumentException bubble up — controller maps them to HTTP status codes
