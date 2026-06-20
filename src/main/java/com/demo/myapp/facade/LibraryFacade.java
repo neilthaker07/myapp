@@ -12,7 +12,7 @@ import com.demo.myapp.observer.AuditLogObserver;
 import com.demo.myapp.observer.AvailabilityObserver;
 import com.demo.myapp.observer.BookEventPublisher;
 import com.demo.myapp.observer.LendingNotificationObserver;
-import com.demo.myapp.service.BookService;
+import com.demo.myapp.service.IBookService;
 import com.demo.myapp.strategy.BookSortStrategy;
 import com.demo.myapp.strategy.SortByAuthorStrategy;
 import com.demo.myapp.strategy.SortByIdStrategy;
@@ -26,11 +26,12 @@ import java.util.List;
 @Service
 public class LibraryFacade {
 
-    private final BookService bookService;
+    // Client doesn't know it's a proxy. Example - Spring AOP, lazy loading, auth
+    private final IBookService bookService; // holds proxy — LibraryFacade never knows
     private final BookEventPublisher publisher;
     private final AppLogger logger = AppLogger.getInstance();
 
-    public LibraryFacade(BookService bookService, BookEventPublisher publisher) {
+    public LibraryFacade(IBookService bookService, BookEventPublisher publisher) {
         this.bookService = bookService;
         this.publisher = publisher;
 

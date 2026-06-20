@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class BookService {
+public class BookService implements IBookService {
 
     private final AppLogger logger = AppLogger.getInstance();
 
