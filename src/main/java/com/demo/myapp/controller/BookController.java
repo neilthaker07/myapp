@@ -5,6 +5,7 @@ import com.demo.myapp.adapter.ExternalBookView;
 import com.demo.myapp.facade.LibraryFacade;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +17,6 @@ import java.util.Map;
 @RequestMapping("/api/books")
 public class BookController {
 
-    // Facade Pattern — controller talks only to the facade, never to BookService or subsystems directly
-    // Need to simplify access to a complex system (complexity problem)
-    // Example - Hotel concierge who handles everything for you
-    // Adapter (compatibility problem)
     private final LibraryFacade libraryFacade;
 
     public BookController(LibraryFacade libraryFacade) {
@@ -27,8 +24,10 @@ public class BookController {
     }
 
     // CREATE (POST) - http://localhost:8080/api/books
+    // @Valid triggers Bean Validation on BookRequest before the method body runs
+    // GlobalExceptionHandler maps MethodArgumentNotValidException → 400, IllegalArgumentException → 400
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody BookRequest request) {
+    public ResponseEntity<Book> createBook(@Valid @RequestBody BookRequest request) {
         return new ResponseEntity<>(libraryFacade.addBook(request), HttpStatus.CREATED);
     }
 
@@ -50,7 +49,7 @@ public class BookController {
 
     // UPDATE (PUT) - http://localhost:8080/api/books/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody BookRequest request) {
+    public ResponseEntity<Book> updateBook(@PathVariable Long id, @Valid @RequestBody BookRequest request) {
         Book updated = libraryFacade.modifyBook(id, request);
         return updated != null
                 ? ResponseEntity.ok(updated)
@@ -75,22 +74,16 @@ public class BookController {
     }
 
     // CHANGE STATE (PATCH) - http://localhost:8080/api/books/{id}/status?action=lend
+    // GlobalExceptionHandler maps IllegalStateException → 409, IllegalArgumentException → 400
     @PatchMapping("/{id}/status")
-    public ResponseEntity<?> changeBookState(@PathVariable Long id, @RequestParam String action) {
-        try {
-            Book updated = libraryFacade.transitionState(id, action);
-            return updated != null
-                    ? ResponseEntity.ok(updated)
-                    : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<Book> changeBookState(@PathVariable Long id, @RequestParam String action) {
+        Book updated = libraryFacade.transitionState(id, action);
+        return updated != null
+                ? ResponseEntity.ok(updated)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     // FILTER (GET) - http://localhost:8080/api/books/filter?genre=Java&language=English&status=AVAILABLE_TO_LEND
-    // Decorator Pattern — filter chain is built dynamically from whichever query params are present
     @GetMapping("/filter")
     public ResponseEntity<List<Book>> filterBooks(
             @RequestParam(required = false) String genre,
@@ -100,7 +93,6 @@ public class BookController {
     }
 
     // EXTERNAL VIEW (GET) - http://localhost:8080/api/books/{id}/external
-    // Adapter Pattern — wraps Book (Adaptee) in BookToExternalAdapter (Target) without touching Book.java
     @GetMapping("/{id}/external")
     public ResponseEntity<ExternalBookView> getExternalView(@PathVariable Long id) {
         Book book = libraryFacade.findBook(id);

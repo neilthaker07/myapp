@@ -1,5 +1,8 @@
 package com.demo.myapp.service;
 
+import com.demo.myapp.chain.BookRequestHandler;
+import com.demo.myapp.chain.DuplicateTitleHandler;
+import com.demo.myapp.chain.MaxLibrarySizeHandler;
 import com.demo.myapp.model.Book;
 import com.demo.myapp.model.BookRequest;
 import com.demo.myapp.model.BookStatus;
@@ -20,6 +23,21 @@ public class BookService {
     // Simulating a database with a Map
     private final Map<Long, Book> bookDatabase = new HashMap<>();
     private Long nextId = 1L;
+
+    // Chain of Responsibility — business rule validation after Bean Validation passes
+    // Title/author format checks are handled by @NotBlank/@Size on BookRequest (Layer 1)
+    // Chain handles business rules that need data access (Layer 2)
+    private final BookRequestHandler validationChain = buildValidationChain();
+
+    private BookRequestHandler buildValidationChain() {
+        // Only business rules here — format checks live on BookRequest annotations
+        // Order: duplicate title check → library capacity check
+        DuplicateTitleHandler duplicateHandler = new DuplicateTitleHandler(() -> bookDatabase.values());
+        MaxLibrarySizeHandler maxSizeHandler   = new MaxLibrarySizeHandler(() -> bookDatabase.size(), 1000);
+
+        duplicateHandler.setNext(maxSizeHandler);
+        return duplicateHandler;
+    }
 
     // GET ALL (no sort)
     public List<Book> getAllBooks() {
@@ -45,8 +63,9 @@ public class BookService {
         return book;
     }
 
-    // CREATE — Builder Pattern: constructs Book from BookRequest via Book.Builder
+    // CREATE — Chain of Responsibility validates first, then Builder constructs the Book
     public Book createBook(BookRequest request) {
+        validationChain.handle(request); // throws IllegalArgumentException if any handler rejects
         logger.info("Creating book, assigned id=" + nextId + ", title=" + request.getTitle());
         Book book = new Book.Builder(request.getTitle(), request.getAuthor())
                 .genre(request.getGenre())

@@ -1,6 +1,7 @@
 package com.demo.myapp.decorator;
 
 import com.demo.myapp.model.Book;
+import com.demo.myapp.model.BookGenre;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,7 +19,8 @@ public class GenreFilter extends BookFilterDecorator {
     @Override
     public List<Book> apply(List<Book> books) {
         return wrapped.apply(books).stream()
-                .filter(b -> genre.equalsIgnoreCase(b.getGenre()))
+                .filter(b -> b.getGenre() != null
+                        && b.getGenre().name().equalsIgnoreCase(genre))
                 .collect(Collectors.toList());
     }
 }

@@ -7,7 +7,7 @@ public class Book {
     private Long id;
     private String title;
     private String author;
-    private String genre;
+    private BookGenre genre;
     private String language;
 
     // The Book is the "context" in GoF State pattern — it holds the current state object
@@ -52,8 +52,8 @@ public class Book {
     public String getAuthor() { return author; }
     public void setAuthor(String author) { this.author = author; }
 
-    public String getGenre() { return genre; }
-    public void setGenre(String genre) { this.genre = genre; }
+    public BookGenre getGenre() { return genre; }
+    public void setGenre(BookGenre genre) { this.genre = genre; }
 
     public String getLanguage() { return language; }
     public void setLanguage(String language) { this.language = language; }
@@ -63,7 +63,7 @@ public class Book {
     public static class Builder {
         private final String title;
         private final String author;
-        private String genre;
+        private BookGenre genre;
         private String language;
 
         public Builder(String title, String author) {
@@ -71,7 +71,7 @@ public class Book {
             this.author = author;
         }
 
-        public Builder genre(String genre) {
+        public Builder genre(BookGenre genre) {
             this.genre = genre;
             return this;
         }
