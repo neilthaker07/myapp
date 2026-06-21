@@ -22,6 +22,7 @@ public class InMemoryBookRepository implements BookRepository {
     private final Map<Long, Book> store = new HashMap<>();
     private Long nextId = 1L;
 
+    // Here is implicit @Transactional - ACID
     @Override
     public Book save(Book book) {
         if (book.getId() == null) {
