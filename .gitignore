@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Claude Code ###
-.claude/settings.local.json
+# .claude/ is tracked — contains project skills and settings
