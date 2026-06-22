@@ -334,19 +334,19 @@ public class DeliveryExceptionHandler {
 Full GoF pattern showcase: Singleton, Builder, Proxy, Facade, State, Command, Observer, Chain of Responsibility, Strategy, Specification, Decorator, Adapter, Template Method, Abstract Factory, Mediator, AOP.
 Reference: `/rippling-delivery` for delivery system; use design-patterns skill for library patterns.
 
-### `myapp-parking` (port 8082) — Parking Lot System
+### `myapp-p3` (port 8082) — Parking Lot System
 OOP interview problem. Patterns: Singleton, Builder, Factory, State, Facade.
 In-memory: `ConcurrentHashMap` for tickets, `EnumMap<SpotType, EnumMap<SpotSize, Deque<ParkingSpot>>>` for O(1) spot finding.
 
-### `myapp-practise1` (port 8083) — Delivery Driver Payment System
+### `myapp-p1` (port 8083) — Delivery Driver Payment System
 Rippling interview practice. See dedicated section below.
 
-### `myapp-practise2` (port 8084) — Expense Rule Engine
+### `myapp-p2` (port 8084) — Expense Rule Engine
 Rippling interview practice. See dedicated section below.
 
 ---
 
-## Delivery Driver Payment System — `myapp-practise1`
+## Delivery Driver Payment System — `myapp-p1`
 
 ### Domain model
 ```java
@@ -415,7 +415,7 @@ GET   /api/delivery/payments/unpaid                getTotalUnpaid
 
 ---
 
-## Expense Rule Engine — `myapp-practise2`
+## Expense Rule Engine — `myapp-p2`
 
 ### Domain model
 ```java

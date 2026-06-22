@@ -13,9 +13,9 @@
     </parent>
 
     <groupId>com.demo</groupId>
-    <artifactId>myapp-practise2</artifactId>
+    <artifactId>myapp-p2</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>myapp-practise2</name>
+    <name>myapp-p2</name>
     <description>Expense Rule Engine — Rippling interview practice</description>
 
     <properties>

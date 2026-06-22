@@ -18,7 +18,7 @@ This is a multi-module Spring Boot 4.1.0 / Java 21 interview-prep sandbox. Each 
 | Module | Port | Purpose |
 |---|------|---|
 | `myapp` (root) | 8080 | Library management — dense design pattern showcase |
-| `myapp-parking` | 8082 | Parking lot system — OOP interview problem |
+| `myapp-p3` | 8082 | Parking lot system — OOP interview problem |
 | `myapp-rippling` | 8081 | Stub (health endpoint only) |
 
 ## Commands
@@ -28,13 +28,13 @@ Run from within the module directory (or pass `-f` with the module path).
 **Build:**
 ```bash
 ./mvnw clean package -DskipTests          # root module
-cd myapp-parking && ../mvnw clean package -DskipTests
+cd myapp-p3 && ../mvnw clean package -DskipTests
 ```
 
 **Run:**
 ```bash
 ./mvnw spring-boot:run                    # root module (port 8080)
-cd myapp-parking && ../mvnw spring-boot:run  # port 8082
+cd myapp-p3 && ../mvnw spring-boot:run  # port 8082
 ```
 
 **Test:**
@@ -120,7 +120,7 @@ GET    /api/books/report?format=summary|detailed|csv
 GET    /api/books/{id}/external       Adapter view
 ```
 
-## `myapp-parking` module
+## `myapp-p3` module
 
 **No database** — all state is in-memory (`ConcurrentHashMap` for active tickets; `EnumMap<SpotType, EnumMap<SpotSize, Deque<ParkingSpot>>>` for the available-spot pool).
 

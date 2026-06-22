@@ -13,9 +13,9 @@
     </parent>
 
     <groupId>com.demo</groupId>
-    <artifactId>myapp-parking</artifactId>
+    <artifactId>myapp-p3</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>myapp-parking</name>
+    <name>myapp-p3</name>
     <description>Parking Lot Management System — OOP interview-prep module</description>
 
     <properties>

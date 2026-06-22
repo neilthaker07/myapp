@@ -13,9 +13,9 @@
     </parent>
 
     <groupId>com.demo</groupId>
-    <artifactId>myapp-practise1</artifactId>
+    <artifactId>myapp-p1</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>myapp-practise1</name>
+    <name>myapp-p1</name>
     <description>Delivery Driver Payment System — Rippling interview practice</description>
 
     <properties>

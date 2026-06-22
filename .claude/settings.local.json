@@ -4,7 +4,9 @@
       "mcp__ide__getDiagnostics",
       "Bash(./mvnw compile *)",
       "WebSearch",
-      "Bash(../mvnw clean *)"
+      "Bash(../mvnw clean *)",
+      "Bash(mv /Users/oceanblue/dev/myapp/myapp-practise1 /Users/oceanblue/dev/myapp/myapp-p1)",
+      "Bash(mv /Users/oceanblue/dev/myapp/myapp-practise2 /Users/oceanblue/dev/myapp/myapp-p2)"
     ]
   }
 }
