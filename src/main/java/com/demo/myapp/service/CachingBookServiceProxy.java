@@ -43,6 +43,11 @@ public class CachingBookServiceProxy implements IBookService {
         return book;
     }
 
+    @Override
+    public <T> T getBookById(Long id, BookProjector<T> projector) {
+        return projector.project(getBookById(id)); // reuses cache
+    }
+
     // CACHE-INVALIDATING — book changed, cached version is stale
     @Override
     public Book updateBook(Long id, BookRequest request) {

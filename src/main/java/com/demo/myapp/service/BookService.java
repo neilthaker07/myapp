@@ -59,6 +59,11 @@ public class BookService implements IBookService {
     }
 
     @Override
+    public <T> T getBookById(Long id, BookProjector<T> projector) {
+        return projector.project(getBookById(id));
+    }
+
+    @Override
     public Book createBook(BookRequest request) {
         validationChain.handle(request);
         logger.info("Creating book, title=" + request.getTitle());

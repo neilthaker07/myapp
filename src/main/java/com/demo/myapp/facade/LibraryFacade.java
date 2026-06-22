@@ -13,9 +13,8 @@ import com.demo.myapp.model.BookRequest;
 import com.demo.myapp.model.BookStatus;
 import com.demo.myapp.model.NullBook;
 import com.demo.myapp.observer.AuditLogObserver;
-import com.demo.myapp.observer.AvailabilityObserver;
 import com.demo.myapp.observer.BookEventPublisher;
-import com.demo.myapp.observer.LendingNotificationObserver;
+import com.demo.myapp.service.BookProjector;
 import com.demo.myapp.service.IBookService;
 import com.demo.myapp.specification.GenreSpecification;
 import com.demo.myapp.specification.LanguageSpecification;
@@ -45,9 +44,18 @@ public class LibraryFacade {
         this.publisher = publisher;
         this.commandHistory = commandHistory;
 
+        // Named class — audit fires on every transition and may grow more complex
         publisher.register(new AuditLogObserver());
-        publisher.register(new AvailabilityObserver());
-        publisher.register(new LendingNotificationObserver());
+
+        // Simple one-off observers registered as lambdas — @FunctionalInterface enables this
+        publisher.register((book, oldStatus, newStatus) -> {
+            if (newStatus == BookStatus.AVAILABLE_TO_LEND)
+                logger.info("AVAILABILITY: \"" + book.getTitle() + "\" is now available to borrow!");
+        });
+        publisher.register((book, oldStatus, newStatus) -> {
+            if (newStatus == BookStatus.LENDED_TO_INDIVIDUALS)
+                logger.info("NOTIFICATION: \"" + book.getTitle() + "\" has been lent out. Due back in 14 days.");
+        });
     }
 
     public Book addBook(BookRequest request) {
@@ -58,9 +66,6 @@ public class LibraryFacade {
     // Strategy selection lives here — controller never needs to know about concrete strategy classes
     public List<Book> getBooks(String sort) {
         BookSortStrategy strategy = switch (sort) {
-            // Factory Method deciding which strategy to create
-            // Factory answers 'what do I build?';
-            // Strategy answers 'how do I run?
             case "title"  -> new SortByTitleStrategy();
             case "author" -> new SortByAuthorStrategy();
             default       -> new SortByIdStrategy();
@@ -72,6 +77,12 @@ public class LibraryFacade {
     public Book findBook(Long id) {
         logger.info("Facade: findBook - id=" + id);
         return bookService.getBookById(id);
+    }
+
+    // BookProjector — caller supplies the output shape as a lambda or method reference
+    public <T> T findBookAs(Long id, BookProjector<T> projector) {
+        logger.info("Facade: findBookAs - id=" + id);
+        return bookService.getBookById(id, projector);
     }
 
     public Book modifyBook(Long id, BookRequest request) {

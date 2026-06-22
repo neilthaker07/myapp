@@ -131,11 +131,13 @@ public class BookController {
     }
 
     // EXTERNAL VIEW (GET) - http://localhost:8080/api/books/{id}/external
+    // BookProjector<ExternalBookView> — BookToExternalAdapter::new is a constructor reference;
+    // the caller (controller) decides the output shape without the facade knowing about adapters
     @GetMapping("/{id}/external")
     public ResponseEntity<ExternalBookView> getExternalView(@PathVariable Long id) {
-        Book book = libraryFacade.findBook(id);
-        return !book.isEmpty()
-                ? ResponseEntity.ok(new BookToExternalAdapter(book))
+        BookToExternalAdapter adapter = libraryFacade.findBookAs(id, BookToExternalAdapter::new);
+        return !adapter.getBook().isEmpty()
+                ? ResponseEntity.ok(adapter)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

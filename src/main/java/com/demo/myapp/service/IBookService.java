@@ -13,6 +13,7 @@ public interface IBookService {
     List<Book> getAllBooks();
     List<Book> getAllBooks(BookSortStrategy strategy);
     Book getBookById(Long id);
+    <T> T getBookById(Long id, BookProjector<T> projector);
     Book createBook(BookRequest request);
     Book updateBook(Long id, BookRequest request);
     boolean deleteBook(Long id);

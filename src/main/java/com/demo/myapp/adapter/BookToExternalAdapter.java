@@ -1,6 +1,7 @@
 package com.demo.myapp.adapter;
 
 import com.demo.myapp.model.Book;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 // Adapter Pattern — translates Book (Adaptee) into ExternalBookView (Target)
 // Book.java is never modified — the adapter bridges the incompatibility
@@ -11,6 +12,9 @@ public class BookToExternalAdapter implements ExternalBookView {
     public BookToExternalAdapter(Book book) {
         this.book = book;
     }
+
+    @JsonIgnore
+    public Book getBook() { return book; }
 
     @Override
     public String getBookId() {

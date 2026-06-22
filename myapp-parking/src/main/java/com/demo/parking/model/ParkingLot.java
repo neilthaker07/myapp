@@ -65,8 +65,23 @@ public class ParkingLot {
         return spot;
     }
 
-    // O(1): no floor scan — poll directly from the lot-level pool.
-    // Iterates preferred types + compatible sizes (small bounded constants, not proportional to lot size).
+    /**
+     * Finds and claims the best available spot for the given vehicle in O(1) time.
+     *
+     * Step 1 — preferred types: VehicleType enum encodes a priority-ordered list of spot types
+     *   e.g. ELECTRIC_CAR → [ELECTRIC, COMPACT, GENERAL]. We try ELECTRIC first to preserve
+     *   charging spots for electric vehicles; GENERAL is always the last fallback.
+     *
+     * Step 2 — compatible sizes: for each candidate type, ask compatibleSizes() which sizes
+     *   of that type this vehicle can legally use. We iterate those sizes and call poll() on
+     *   the corresponding deque in availablePool.
+     *
+     * Step 3 — poll(): removes and returns the head of the deque in O(1). Returns null if the
+     *   deque is empty (no spot of that type+size available), so we try the next combination.
+     *
+     * Total iterations ≤ |SpotType| × |SpotSize| = 5 × 3 = 15 — a fixed constant regardless
+     * of how many floors or spots the lot has. This is why it is O(1).
+     */
     private ParkingSpot findSpot(Vehicle vehicle) {
         for (SpotType type : vehicle.getPreferredSpotTypes()) {
             for (SpotSize size : compatibleSizes(type, vehicle.getRequiredSpotSize())) {
@@ -77,6 +92,18 @@ public class ParkingLot {
         return null;
     }
 
+    /**
+     * Returns the spot sizes that are legal for a given type + vehicle's minimum required size.
+     *
+     * GENERAL spots come in multiple sizes (M, L) — a vehicle that needs size M can also fit
+     * in an L spot, so we return all sizes >= minSize in ascending order (prefer exact fit first
+     * to avoid wasting a large spot on a small vehicle).
+     *   e.g. minSize=M → [M, L]  |  minSize=L → [L]
+     *
+     * All other spot types (MOTORCYCLE, COMPACT, ELECTRIC, DISABLED) have a single fixed size.
+     * There is no benefit in trying a different size — the spot type itself enforces compatibility.
+     * List.of(minSize) returns a single-element immutable list, e.g. [M] for COMPACT.
+     */
     private List<SpotSize> compatibleSizes(SpotType type, SpotSize minSize) {
         if (type == SpotType.GENERAL) {
             return Arrays.stream(SpotSize.values())
