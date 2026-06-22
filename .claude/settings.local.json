@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "mcp__ide__getDiagnostics",
-      "Bash(./mvnw compile *)"
+      "Bash(./mvnw compile *)",
+      "WebSearch",
+      "Bash(../mvnw clean *)"
     ]
   }
 }
