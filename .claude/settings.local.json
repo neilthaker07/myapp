@@ -6,7 +6,25 @@
       "WebSearch",
       "Bash(../mvnw clean *)",
       "Bash(mv /Users/oceanblue/dev/myapp/myapp-practise1 /Users/oceanblue/dev/myapp/myapp-p1)",
-      "Bash(mv /Users/oceanblue/dev/myapp/myapp-practise2 /Users/oceanblue/dev/myapp/myapp-p2)"
+      "Bash(mv /Users/oceanblue/dev/myapp/myapp-practise2 /Users/oceanblue/dev/myapp/myapp-p2)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:leetcode.com)",
+      "WebFetch(domain:prepfully.com)",
+      "WebFetch(domain:www.codingkaro.in)",
+      "WebFetch(domain:www.glassdoor.com)",
+      "WebFetch(domain:www.indeed.com)",
+      "WebFetch(domain:dataford.io)",
+      "WebFetch(domain:www.teamblind.com)",
+      "WebFetch(domain:www.interviewquery.com)",
+      "WebFetch(domain:nodeflair.com)",
+      "WebFetch(domain:www.devopsschool.com)",
+      "WebFetch(domain:interviewsolver.com)",
+      "WebFetch(domain:careers.fiserv.com)",
+      "WebFetch(domain:interviewprep.org)",
+      "WebFetch(domain:www.glassdoor.co.in)",
+      "WebFetch(domain:rathod-ajay.medium.com)",
+      "WebFetch(domain:companyinterviews.com)",
+      "Skill(claude-api)"
     ]
   }
 }
