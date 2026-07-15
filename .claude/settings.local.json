@@ -24,7 +24,10 @@
       "WebFetch(domain:www.glassdoor.co.in)",
       "WebFetch(domain:rathod-ajay.medium.com)",
       "WebFetch(domain:companyinterviews.com)",
-      "Skill(claude-api)"
+      "Skill(claude-api)",
+      "WebFetch(domain:docs.clover.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(./mvnw -q compile -Dmaven.test.skip=true)"
     ]
   }
 }
