@@ -27,7 +27,16 @@
       "Skill(claude-api)",
       "WebFetch(domain:docs.clover.com)",
       "WebFetch(domain:github.com)",
-      "Bash(./mvnw -q compile -Dmaven.test.skip=true)"
+      "Bash(./mvnw -q compile -Dmaven.test.skip=true)",
+      "Bash(nohup ./mvnw spring-boot:run -Dspring-boot.run.arguments=\"--spring.profiles.active=memory\")",
+      "Bash(echo \"started pid $!\")",
+      "Bash(lsof -i :8080 -sTCP:LISTEN)",
+      "Bash(curl -s http://localhost:8080/api/solid/lsp)",
+      "Bash(curl -s \"http://localhost:8080/api/solid/srp?orderId=O-100&subtotal=100.00&loyaltyMember=true\")",
+      "Bash(curl -s \"http://localhost:8080/api/solid/ocp?tenderType=card&amount=42.00\")",
+      "Bash(curl -s \"http://localhost:8080/api/solid/ocp?tenderType=taptopay&amount=15.50\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:8080/api/solid/ocp?tenderType=bitcoin&amount=1.00\")",
+      "Bash(curl -s \"http://localhost:8080/api/solid/isp?cash=false\")"
     ]
   }
 }
