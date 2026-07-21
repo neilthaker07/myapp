@@ -5,6 +5,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -39,6 +40,11 @@ public class GrowPractise {
 
         System.out.println("\n--- Provider matches for John Smith ---");
         matchProviders(clientsById.get(1L), providersById).forEach(System.out::println);
+
+        System.out.println("\n--- Clients in natural order (by name) ---");
+        List<Client> clientsByName = new ArrayList<>(clientsById.values());
+        Collections.sort(clientsByName); // no Comparator passed — uses Client.compareTo (Comparable)
+        clientsByName.forEach(System.out::println);
     }
 
     static List<Provider> rankProviders(Map<Long, Provider> providersById, Map<Long, Appointment> appointmentsById) {
