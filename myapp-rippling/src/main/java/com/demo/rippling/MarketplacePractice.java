@@ -125,7 +125,7 @@ public class MarketplacePractice {
 
     @Getter
     static class EmployeePointsMgmt {
-        Map<String, EmployeeAccount> employees = new ConcurrentHashMap<>();
+        private final Map<String, EmployeeAccount> employees = new ConcurrentHashMap<>();
         public void grantPoints(String employeeId, int points) {
 //            if (employees.containsKey(employeeId)) {
 //                EmployeeAccount employeeAccount = employees.get(employeeId);
@@ -160,7 +160,7 @@ public class MarketplacePractice {
 
     @Getter
     static class InventoryMgmt {
-        Map<String, Item> inventory = new ConcurrentHashMap<>();
+        private final Map<String, Item> inventory = new ConcurrentHashMap<>();
         void addInventory(String sku, String name, int price, int quantity) {
             inventory.computeIfAbsent(sku, k -> new Item(sku, name, price, quantity));
         }
@@ -176,8 +176,8 @@ public class MarketplacePractice {
     }
 
     static class MarketplaceEngine {
-        InventoryMgmt inventoryMgmt;
-        EmployeePointsMgmt employeePointsMgmt;
+        private final InventoryMgmt inventoryMgmt;
+        private final EmployeePointsMgmt employeePointsMgmt;
         public MarketplaceEngine() {
             // Initialize your collections here
             inventoryMgmt = new InventoryMgmt();

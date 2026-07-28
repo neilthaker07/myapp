@@ -43,7 +43,8 @@
       "WebFetch(domain:prachub.com)",
       "Bash(../mvnw -q compile)",
       "Bash(../mvnw -q exec:java -Dexec.mainClass=\"com.demo.expense.service.Prep\")",
-      "Bash(../mvnw -q compile exec:java -Dexec.mainClass=\"com.demo.expense.service.Prep\")"
+      "Bash(../mvnw -q compile exec:java -Dexec.mainClass=\"com.demo.expense.service.Prep\")",
+      "WebFetch(domain:www.glassdoor.ca)"
     ]
   }
 }
